@@ -6,14 +6,10 @@ class ObservabilityRunner():
 
     def run(self):
 
-        results = []
+        expressions = []
 
         for metric in self.metrics:
-            result = metric.calculate(self.df)
 
-            results.append({
-                "metric_name": metric.metric_name,
-                "value": result
-            })
+            expressions.append(metric.get_expression())
 
-        return results
+        return self.df.agg(*expressions)

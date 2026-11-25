@@ -7,7 +7,7 @@ class Metric(ABC):
         self.metric_name = metric_name
 
     @abstractmethod
-    def calculate(self, df):
+    def get_expression(self):
         pass
 
 class RowCountMetric(Metric):
@@ -15,8 +15,8 @@ class RowCountMetric(Metric):
     def __init__(self):
         super().__init__(metric_name="Row count")
     
-    def calculate(self, df):
-        return df.count()
+    def get_expression(self):
+        return F.count("*").alias("row_count")
 
 
 class NullRateMetric(Metric):
@@ -25,11 +25,16 @@ class NullRateMetric(Metric):
         super().__init__(metric_name="Null rate")
         self.column_name = column_name
 
-    def calculate(self, df):
+    def get_expression(self):
         """
         Returns specific column null rate (%).  
         """
-        return (df.filter(F.col(self.column_name).isNull()).count() / df.count())*100
+        return (
+            F.sum(
+                F.when(F.col(self.column_name).isNull(), 1).otherwise(0)
+            ) / F.count("*")
+            * 100
+        ).alias(f"null_rate_{self.column_name}")
 
 class DistinctCountMetric(Metric):
 
@@ -37,6 +42,8 @@ class DistinctCountMetric(Metric):
         super().__init__(metric_name="Distinct row count")
         self.column_name = column_name
 
-    def calculate(self, df):
-        return df.select(self.column_name).distinct().count()
+    def get_expression(self):
+        return (
+            F.countDistinct(F.col(self.column_name))
+        ).alias(f"distinct_count_{self.column_name}")
         
