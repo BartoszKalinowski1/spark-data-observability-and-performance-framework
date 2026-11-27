@@ -9,7 +9,7 @@ class AnomalyDetector(ABC):
         pass
 
 class RowCountAnomalyDetector(AnomalyDetector):
-    def __init__(self, threshold: dict, current_run: str, previous_run: str):
+    def __init__(self, threshold: dict, current_run: dict, previous_run: dict):
         super().__init__(threshold = threshold["row_count"])
         self.current_run = current_run
         self.previous_run = previous_run
